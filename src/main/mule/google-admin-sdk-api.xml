@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:admin-sdkapi="http://www.mulesoft.org/schema/mule/admin-sdkapi"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/admin-sdkapi http://www.mulesoft.org/schema/mule/admin-sdkapi/current/mule-admin-sdkapi.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<admin-sdkapi:config name="Admin_SDK_API_Config" doc:name="Admin SDK API Config" doc:id="3ee7d8c1-cdd3-4d9a-a5ca-9937ac5cf933" property_host="${google.host}" property_port="443" property_protocol="HTTPS" property_client-id="${google.client_id}" property_client-secret="${google.client_secret}" property_local-callback-config="HTTP_Listener_config" property_external-callback-url="http://localhost:8081/callback"/>
+
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="0d773bc8-8607-45a8-bdf6-602276f0f1c4" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="4fd09f83-d309-4da7-83ab-7ec2fd01238e" file="mule-properties.yaml" />
+	<flow name="test-google-admin-sdk-apiFlow1" doc:id="6f2fdf62-acf8-40ac-84ad-8803396620c0" >
+		<http:listener doc:name="/list" doc:id="8bae1ac3-76b3-4ba5-8025-6a8ec16bc091" config-ref="HTTP_Listener_config" path="/list" />
+		<admin-sdkapi:directoryuserslist doc:name="directory.users.list" doc:id="b4460fcc-1081-47ba-8e2a-a8e382c577b1" config-ref="Admin_SDK_API_Config" customer="C03yatig6"/>
+	</flow>
+	<flow name="test-google-admin-sdk-apiFlow" doc:id="3e986bf3-5cc7-494c-a28b-e0aa70ca2e39" >
+		<http:listener doc:name="Listener" doc:id="09c4e921-4928-486c-bb35-cc28a0e176e9" config-ref="HTTP_Listener_config" path="/user"/>
+		<admin-sdkapi:directoryusersget doc:name="directory.users.get" doc:id="a436f040-02ff-4ecb-bc54-8ba4711b0496" config-ref="Admin_SDK_API_Config" user-key="100346803462515387118"/>
+	</flow>
+	<flow name="test-google-admin-sdk-apiFlow2" doc:id="df350dc0-db20-478e-baac-105d1d3f9c69" >
+		<http:listener doc:name="/suspend" doc:id="884090d1-852b-4c2d-96db-df199f82e379" config-ref="HTTP_Listener_config" path="/suspend"/>
+		<ee:transform doc:name="Transform Message" doc:id="0315bbc7-c4c2-4888-a161-6b25cd1a9e81" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	suspended: true
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<admin-sdkapi:directoryusersupdate doc:name="directory.users.update" doc:id="b1fc08b7-83bc-4c33-93d6-2c4b1c89a26a" config-ref="Admin_SDK_API_Config" user-key="100346803462515387118"/>
+	</flow>
+	<flow name="test-google-admin-sdk-apiFlow3" doc:id="cfffaf9c-1607-45c1-a282-50c661090ef9" >
+		<http:listener doc:name="/unsuspend" doc:id="ffbbb154-d597-4f7a-924d-9501877753c9" config-ref="HTTP_Listener_config" path="/unsuspend"/>
+		<ee:transform doc:name="Transform Message" doc:id="f3fc4b85-fe44-4d95-a41d-950acaeb0542" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	suspended: false
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<admin-sdkapi:directoryusersupdate doc:name="directory.users.update" doc:id="850fc425-8f38-4af9-a9da-9a80a0e8b17a" config-ref="Admin_SDK_API_Config" user-key="100346803462515387118"/>
+	</flow>
+</mule>
